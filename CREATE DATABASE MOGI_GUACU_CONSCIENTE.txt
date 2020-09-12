@@ -1,0 +1,685 @@
+CREATE DATABASE MOGI_GUACU_CONSCIENTE
+USE  MOGI_GUACU_CONSCIENTE
+
+--criando tabela endereco
+CREATE TABLE endereco
+(
+    id INT IDENTITY PRIMARY KEY,
+    rua VARCHAR(200),
+    bairro VARCHAR(120) NOT NULL,
+    numero INT,
+    complemento VARCHAR(50),
+	cep INT
+)
+
+--criando tabela evento
+CREATE TABLE evento
+(
+    id INT IDENTITY PRIMARY KEY,
+    titulo VARCHAR(120) NOT NULL,
+    descricao_evento VARCHAR(255) NOT NULL,
+    data_inicio DATE,
+    data_termino DATE,
+	endereco_id Integer,
+	CONSTRAINT evento_id FOREIGN KEY (endereco_id) REFERENCES endereco (id),
+	status_evento VARCHAR(20) NOT NULL CHECK (status_evento IN('ABERTO','BLOQUEADO','CONCLUIDO')), --ENUM
+)
+-- Criando tabela permissao
+CREATE TABLE permissao
+(
+    id INT IDENTITY PRIMARY KEY,
+    admin_permissao BIT NOT NULL,
+    organizador BIT NOT NULL,
+    voluntario BIT NOT NULL
+)
+--criando tabela usuario
+CREATE TABLE usuario
+(
+    id INT IDENTITY PRIMARY KEY,
+    nome VARCHAR(20) NOT NULL,
+    sobrenome VARCHAR(30) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    telefone VARCHAR(15),
+	login_usuario VARCHAR(255) NOT NULL,
+	senha VARCHAR(255) NOT NULL,
+	email_confirmado Bit NOT NULL,
+	permissao_id Integer,
+	CONSTRAINT usuario_id FOREIGN KEY (permissao_id) REFERENCES permissao (id)
+)
+
+--criando tabela requisito
+CREATE TABLE requisito
+(
+    id INT IDENTITY PRIMARY KEY,
+	nome VARCHAR(120) NOT NULL,
+    descricao_requisito VARCHAR(255) NOT NULL,
+	status_requisito VARCHAR(20) NOT NULL CHECK (status_requisito IN('ATINGIDO','NAO_ATINGIDO')), --ENUM
+	qtd_necessario INT NOT NULL,
+	qtd_atingido INT NOT NULL,
+	evento_id Integer,
+	CONSTRAINT requisito_id FOREIGN KEY (evento_id) REFERENCES evento (id)
+	
+)
+--criando tabela feedback
+CREATE TABLE feedback
+(
+    id INT IDENTITY PRIMARY KEY,
+	nota INT NOT NULL,
+    descricao_feedback VARCHAR(255),
+	evento_id Integer,
+	CONSTRAINT feedback_evento_i FOREIGN KEY (evento_id) REFERENCES evento (id),
+	usuario_id Integer,
+	CONSTRAINT feedback_usuario_id FOREIGN KEY (usuario_id) REFERENCES usuario (id)
+)
+--criando tabela voluntario
+CREATE TABLE voluntario
+(
+    id INT IDENTITY PRIMARY KEY,
+	usuario_id Integer,
+	CONSTRAINT voluntario_usuario_id FOREIGN KEY (usuario_id) REFERENCES usuario (id),
+	evento_id Integer,
+	CONSTRAINT voluntario_evento_id FOREIGN KEY (evento_id) REFERENCES evento (id)
+)
+
+--criando tabela organizador
+CREATE TABLE organizador
+(
+    id INT IDENTITY PRIMARY KEY,
+	usuario_id Integer,
+	CONSTRAINT organizador_usuario_id FOREIGN KEY (usuario_id) REFERENCES usuario (id),
+	evento_id Integer,
+	CONSTRAINT organizador_evento_id FOREIGN KEY (evento_id) REFERENCES evento (id)
+)
+
+-- Criando tabela noticia
+CREATE TABLE noticia
+(
+    id INT IDENTITY PRIMARY KEY,
+    titulo VARCHAR(120) NOT NULL,
+    descricao_evento VARCHAR(255) NOT NULL,
+	usuario_id Integer,
+	CONSTRAINT noticia_id FOREIGN KEY (usuario_id) REFERENCES usuario (id),
+    data_publicacao DATE,
+)
+-- Criando tabela imagens_noticia
+CREATE TABLE imagens_noticia
+(
+    id INT IDENTITY PRIMARY KEY,
+    url_imagem VARCHAR(255) NOT NULL,
+	noticia_id Integer,
+	CONSTRAINT imagens_noticia_id FOREIGN KEY (noticia_id) REFERENCES noticia (id)
+)
+
+--criando tabela sugestao_evento
+CREATE TABLE sugestao_evento
+(
+    id INT IDENTITY PRIMARY KEY,
+	descricao_sugestao_evento VARCHAR(255) NOT NULL,
+    rua VARCHAR(200),
+    bairro VARCHAR(120) NOT NULL,
+    numero INT,
+    data_sugestao DATE
+)
+-- Criando tabela imagens_do_evento_sugerido
+CREATE TABLE imagens_do_evento_sugerido
+(
+    id INT IDENTITY PRIMARY KEY,
+    sugestao_evento_id Integer,
+	CONSTRAINT imagens_do_evento_sugerido_id FOREIGN KEY (sugestao_evento_id) REFERENCES sugestao_evento (id),
+	url_imagem VARCHAR(255) NOT NULL
+)
+-- Criando tabela comentario
+CREATE TABLE comentario
+(
+    id INT IDENTITY PRIMARY KEY,
+    texto VARCHAR(255) NOT NULL,
+	usuario_id Integer,
+	CONSTRAINT comentario_usuario_id FOREIGN KEY (usuario_id) REFERENCES usuario (id),
+	evento_id Integer,
+	CONSTRAINT comentario_evento_id FOREIGN KEY (evento_id) REFERENCES evento (id),
+	noticia_id Integer,
+	CONSTRAINT comentario_noticia_id FOREIGN KEY (noticia_id) REFERENCES noticia (id)
+)
+-- Criando tabela sub_comentario_noticia
+CREATE TABLE sub_comentario_noticia
+(
+    id INT IDENTITY PRIMARY KEY,
+    texto VARCHAR(255) NOT NULL,
+	usuario_id Integer,
+	CONSTRAINT sub_comentario_noticia_usuario_id FOREIGN KEY (usuario_id) REFERENCES usuario (id),
+	noticia_id Integer,
+	CONSTRAINT sub_comentario_noticia_noticia_id FOREIGN KEY (noticia_id) REFERENCES noticia (id),
+	comentario_id Integer,
+	CONSTRAINT sub_comentario_noticia_comentario_id FOREIGN KEY (comentario_id) REFERENCES comentario (id)
+
+)
+-- Criando tabela sub_comentario_evento
+CREATE TABLE sub_comentario_evento
+(
+    id INT IDENTITY PRIMARY KEY,
+    texto VARCHAR(255) NOT NULL,
+	usuario_id Integer,
+	CONSTRAINT sub_comentario_evento_usuario_id FOREIGN KEY (usuario_id) REFERENCES usuario (id),
+	evento_id Integer,
+	CONSTRAINT sub_comentario_evento_evento_id FOREIGN KEY (evento_id) REFERENCES evento (id),
+	comentario_id Integer,
+	CONSTRAINT sub_comentario_evento_comentario_id FOREIGN KEY (comentario_id) REFERENCES comentario (id)
+)
+
+
+--COMANDOS BASICOS
+--SELECT * FROM NOME_DA_TABELA 
+--SELECT * FROM eventos
+		
+--PARTES DE UMA TABELA
+--SELECT Titulo, Status_evento FROM evento
+
+--INSERIR DADOS
+--INSERT INTO NOME_DA_TABELA (CAMPOS_QUE_DESEJA_INSERIR_DADOS) VALUES (VALORES_DOS_CAMPOS)
+
+--ATUALIZAR UM DADO
+--UPDATE endereco SET rua = 'ola mundo'
+--WHERE id = 1
+
+--EXCLUIR UM DADO
+--DELETE FROM NOME_DA_TABELA WHERE id = VALOR_DO_ID
+
+--INNER JOIN
+--SELECT A.nome, T.tipo, T.numero, E.bairro, E.uf
+--FROM ALUNO A
+--INNER JOIN TELEFONE T
+--ON A.IDALUNO = T.ID_ALUNO
+--INNER JOIN endereco E
+--ON A.IDALUNO = E.ID_ALUNO
+
+
+
+
+--endereco seria da onde ? pessoal do paticipante ou do evento---------------------------------
+------------------------------DADOS NA TABELA ENDEREÇO----------------------------------------------------------------------------------
+INSERT INTO endereco VALUES('Maria caporali','Parque real',136,'61',13800021)
+INSERT INTO endereco VALUES('M 12','Cervezão',90,NULL,13800021)
+INSERT INTO endereco VALUES('Av 68 A','arco iris',452,NULL,13800021)
+INSERT INTO endereco VALUES('Rua 10','Parque real',136,NULL,13800021)
+INSERT INTO endereco VALUES('Rua 11','Jardim real',136,'61',13800021)
+INSERT INTO endereco VALUES('Rua 22','Parque Universitario',136,'61',13800021)
+INSERT INTO endereco VALUES('Av 12','Parque reaIndustrual',136,'61',13800021)
+INSERT INTO endereco VALUES('Av 12 A','Cervezão',136,NULL,13800021)
+INSERT INTO endereco VALUES('Rua 11','Parque real',136,'61',13800021)
+
+--DELETANDO DADOS NA TABELA endereco
+DELETE FROM endereco WHERE id = 1
+SELECT *FROM endereco
+
+
+--ATUALIZADO DADOS N TABELA endereco
+UPDATE endereco SET bairro = 'Atalizado com sucesso'
+WHERE id = 2
+SELECT *FROM endereco
+
+
+
+
+
+--------------------------------------TABELA evento-------------------------------
+--DADOS COM DATA INICIO E DATA TERMINO, SERÁ PASSADO OS VALORES NULL, MANUALMENTE
+--OS VALORES DAS CHAVES ESTRANGEIRAS, SERÁ PASSADO OS VALORES MANUALMENTE
+
+--INSERINDO DADOS NA TABELA evento
+INSERT INTO evento VALUES('Limpeza da rua alvorada','Lugar onde crianças costumam brincar todos os dias, mas não tem manutenção dos poderes Publicos','10/12/2020','11/12/2020',1,'CONCLUIDO')
+INSERT INTO evento VALUES('Limpeza Rio Mogi Guaçu','Com imensa alegra convidamos a todos que gostariam de participar de um mutirão que será realizado 
+logo mais no rio mogi guaçu','10/12/2020','11/12/2020',2,'ABERTO')
+INSERT INTO evento VALUES('Limpeza da Praça Rio Negro e Slimimões','O rio que já nos trouxe tantas felicidades, hije passa por momentos de extrema sujeira',NULL,NULL,3,'ABERTO')
+INSERT INTO evento VALUES('Limpeza de Terreno','Com imensa alegra convidamos a todos que gostariam de participar de um mutirão que será realizado 
+logo mais no Limpeza de Terreno',NULL,NULL,4,'BLOQUEADO')
+
+--DELETANDO DADOS NA TABELA evento
+DELETE FROM evento WHERE id = 4
+SELECT *FROM evento
+
+--ATUALIZADO DADOS N TABELA evento
+UPDATE evento SET Descricao_evento = 'Atalizado com sucesso'
+WHERE id = 6
+SELECT *FROM evento
+
+
+
+------------------------------DADOS NA TABELA sugestao_evento-----------------------------------------------------------------------------
+INSERT INTO sugestao_evento VALUES('Rua suja','Pedro alvaro','jundiai',1236,'10/12/2020')
+INSERT INTO sugestao_evento VALUES('Praça abandonada','Pedro alvaro','jundiai',1236,'10/12/2020')
+INSERT INTO sugestao_evento VALUES('Rio que da dó','Pedro alvaro','jundiai',1236,'10/12/2020')
+INSERT INTO sugestao_evento VALUES('Rua suja','Pedro alvaro','jundiai',1236,'10/12/2020')
+INSERT INTO sugestao_evento VALUES('Praça abandonada','Pedro alvaro','jundiai',1236,'10/12/2020')
+INSERT INTO sugestao_evento VALUES('Praça sem pintura','Pedro alvaro','jundiai',1236,'10/12/2020')
+INSERT INTO sugestao_evento VALUES('Praça sem pintura ','Pedro alvaro','jundiai',1236,'10/12/2020')
+INSERT INTO sugestao_evento VALUES('Rua suja','Pedro alvaro','jundiai',1236,'10/12/2020')
+
+--DELETANDO DADOS NA TABELA sugestao_evento
+DELETE FROM sugestao_evento WHERE id = 1
+SELECT *FROM sugestao_evento
+
+
+--ATUALIZADO DADOS N TABELA sugestao_evento
+UPDATE sugestao_evento SET rua = 'Atalizado com sucesso'
+WHERE id = 2
+SELECT *FROM sugestao_evento
+
+------------------------------DADOS NA TABELA permissao-----------------------------------------------------------------
+INSERT INTO permissao VALUES(1,1,0)
+INSERT INTO permissao VALUES(1,0,0)
+INSERT INTO permissao VALUES(0,1,0)
+INSERT INTO permissao VALUES(1,1,1)
+INSERT INTO permissao VALUES(1,0,0)
+INSERT INTO permissao VALUES(0,0,0)
+INSERT INTO permissao VALUES(1,0,0)
+INSERT INTO permissao VALUES(1,0,0)
+INSERT INTO permissao VALUES(0,1,0)
+
+--DELETANDO DADOS NA TABELA permissao
+DELETE FROM permissao WHERE id = 1
+SELECT *FROM permissao
+
+
+--ATUALIZADO DADOS N TABELA permissao
+UPDATE permissao SET organizador = 0
+WHERE id = 2
+SELECT *FROM permissao
+
+
+------------------------------DADOS NA TABELA usuario-----------------------------------------------------------------
+INSERT INTO usuario VALUES('Rafael','Martins','rafael@hotmail','19 98812 9770', 'rafael','qqrafael',1,1)
+INSERT INTO usuario VALUES('Pedro','Martins','rafael@hotmail','19 98812 9770', 'Pedro','qqrafael',1,2)
+INSERT INTO usuario VALUES('joao','bingulin','joao@hotmail','19 98812 9770', 'joao','qqrafael',1,3)
+INSERT INTO usuario VALUES('thomas','romeu','thomaz@hotmail','19 98812 9770', 'tomais','qqrafael',1,4)
+INSERT INTO usuario VALUES('alexandre','gabreiel','ex@hotmail','19 98812 9770', 'joao','qqrafael',1,5)
+INSERT INTO usuario VALUES('Rafael1','Martins','rafael@hotmail','19 98812 9770', 'rafael','qqrafael',0,6)
+INSERT INTO usuario VALUES('Pedro1','Martins','rafael@hotmail','19 98812 9770', 'Pedro','qqrafael',0,7)
+INSERT INTO usuario VALUES('joao1','bingulin','joao@hotmail','19 98812 9770', 'joao','qqrafael',0,8)
+INSERT INTO usuario VALUES('thomas1','romeu','thomaz@hotmail','19 98812 9770', 'tomais','qqrafael',0,9)
+INSERT INTO usuario VALUES('alexandre1','gabreiel','ex@hotmail','19 98812 9770', 'joao','qqrafael',0,10)
+INSERT INTO usuario VALUES('Rafael2','Martins','rafael@hotmail','19 98812 9770', 'rafael','qqrafael',1,1)
+INSERT INTO usuario VALUES('Pedro2','Martins','rafael@hotmail','19 98812 9770', 'Pedro','qqrafael',1,2)
+INSERT INTO usuario VALUES('joao2','bingulin','joao@hotmail','19 98812 9770', 'joao','qqrafael',1,3)
+INSERT INTO usuario VALUES('thomas2','romeu','thomaz@hotmail','19 98812 9770', 'tomais','qqrafael',1,4)
+INSERT INTO usuario VALUES('alexandre2','gabreiel','ex@hotmail','19 98812 9770', 'joao','qqrafael',1,5)
+INSERT INTO usuario VALUES('Rafael3','Martins','rafael@hotmail','19 98812 9770', 'rafael','qqrafael',0,6)
+INSERT INTO usuario VALUES('Pedro3','Martins','rafael@hotmail','19 98812 9770', 'Pedro','qqrafael',0,7)
+INSERT INTO usuario VALUES('joao3','bingulin','joao@hotmail','19 98812 9770', 'joao','qqrafael',0,8)
+INSERT INTO usuario VALUES('thomas3','romeu','thomaz@hotmail','19 98812 9770', 'tomais','qqrafael',0,9)
+INSERT INTO usuario VALUES('alexandre3','gabreiel','ex@hotmail','19 98812 9770', 'joao','qqrafael',0,10)
+
+--DELETANDO DADOS NA TABELA usuario
+DELETE FROM usuario WHERE id = 1
+SELECT *FROM usuario
+
+
+--ATUALIZADO DADOS N TABELA usuario
+UPDATE usuario SET sobrenome = 'atualizado com sucesso'
+WHERE id = 2
+SELECT *FROM usuario
+
+
+------------------------------DADOS NA TABELA feedback-----------------------------------------------------------------
+INSERT INTO feedback VALUES(5,'Muito bom o trabalho do pessoal, parabéns',1,1)
+INSERT INTO feedback VALUES(4,'Muito bom o trabalho do pessoal, parabéns',1,1)
+INSERT INTO feedback VALUES(3,'Muito bom o trabalho do pessoal, parabéns',2,2)
+INSERT INTO feedback VALUES(2,'bom',3,3)
+INSERT INTO feedback VALUES(1,'Muito ruim',4,4)
+INSERT INTO feedback VALUES(5,'Muito bom o trabalho do pessoal, parabéns',5,5)
+INSERT INTO feedback VALUES(4,'parabéns',6,6)
+INSERT INTO feedback VALUES(5,'Muito bom o trabalho do pessoal, parabéns',7,7)
+INSERT INTO feedback VALUES(5,'Muito bom o trabalho',8,8)
+INSERT INTO feedback VALUES(2,'parabéns',9,9)
+INSERT INTO feedback VALUES(5,'Muito bom o trabalho do pessoal, parabéns',10,10)
+
+
+--DELETANDO DADOS NA TABELA feedback
+DELETE FROM feedback WHERE id = 14
+SELECT *FROM feedback
+
+
+--ATUALIZADO DADOS N TABELA permissao
+UPDATE feedback SET descricao_Feedback = 'atualizado com sucesso'
+WHERE id = 5
+SELECT *FROM feedback
+
+SELECT A.nome, T.Titulo, E.Texto
+FROM usuario A
+INNER JOIN evento T
+ON A.UsuarioId = T.evento_id
+INNER JOIN comentario E
+ON A.UsuarioId = E.ComentarioId
+
+SELECT *FROM usuario
+SELECT *FROM evento
+SELECT *FROM comentario
+
+
+
+
+------------------------------DADOS NA TABELA voluntario-----------------------------------------------------------------
+INSERT INTO voluntario VALUES(1,1)
+INSERT INTO voluntario VALUES(2,2)
+INSERT INTO voluntario VALUES(3,3)
+INSERT INTO voluntario VALUES(4,4)
+INSERT INTO voluntario VALUES(5,5)
+INSERT INTO voluntario VALUES(6,6)
+INSERT INTO voluntario VALUES(7,7)
+INSERT INTO voluntario VALUES(8,8)
+INSERT INTO voluntario VALUES(9,9)
+INSERT INTO voluntario VALUES(10,10)
+
+
+--DELETANDO DADOS NA TABELA voluntario
+DELETE FROM voluntario WHERE id = 5
+SELECT *FROM voluntario
+
+
+
+
+
+
+------------------------------DADOS NA TABELA sub_comentario_evento-----------------------------------------------------------------
+INSERT INTO sub_comentario_evento VALUES('muito bom, gostei muito',1,3,11)
+INSERT INTO sub_comentario_evento VALUES('muito bom, gostei ',2,3,12)
+INSERT INTO sub_comentario_evento VALUES('bom, gostei muito',3,4,13)
+INSERT INTO sub_comentario_evento VALUES('gostei muito',4,4,14)
+INSERT INTO sub_comentario_evento VALUES('top',5,5,15)
+INSERT INTO sub_comentario_evento VALUES('muito bom',6,6,16)
+INSERT INTO sub_comentario_evento VALUES('bom, gostei',7,7,15)
+INSERT INTO sub_comentario_evento VALUES('muito bom, gostei muito',8,8,17)
+INSERT INTO sub_comentario_evento VALUES('muito bom, gostei muito',9,9,18)
+INSERT INTO sub_comentario_evento VALUES('muito bom',10,10,19)
+
+
+--DELETANDO DADOS NA TABELA sub_comentario_evento
+DELETE FROM sub_comentario_evento WHERE id = 3
+SELECT *FROM sub_comentario_evento
+SELECT *FROM usuario
+SELECT *FROM evento
+SELECT *FROM comentario
+
+--ATUALIZADO DADOS N TABELA sub_comentario_evento
+UPDATE sub_comentario_evento SET Texto = 'atualizado com sucesso'
+WHERE id = 5
+SELECT *FROM sub_comentario_evento
+
+SELECT A.id, T.id, E.id
+FROM usuario A
+INNER JOIN evento T
+ON A.id = T.id
+INNER JOIN comentario E
+ON A.id = E.comentarioId
+
+
+
+
+
+
+------------------------------DADOS NA TABELA noticia-----------------------------------------------------------------
+INSERT INTO noticia VALUES('Rio mogi','limpeza',1,NULL)
+INSERT INTO noticia VALUES('Denuncia','descaso com os animais',2,'10/12/2020')
+INSERT INTO noticia VALUES('doação','roupas',3,'10/12/2020')
+INSERT INTO noticia VALUES('Rio mogi','limpeza',4,NULL)
+INSERT INTO noticia VALUES('Denuncia','descaso com os animais',5,'10/12/2020')
+INSERT INTO noticia VALUES('doação','roupas',6,'10/12/2020')
+INSERT INTO noticia VALUES('Rio mogi','limpeza',7,NULL)
+INSERT INTO noticia VALUES('Denuncia','descaso com os animais',8,'10/12/2020')
+INSERT INTO noticia VALUES('doação','roupas',9,'10/12/2020')
+INSERT INTO noticia VALUES('doação','roupas',10,'10/12/2020')
+INSERT INTO noticia VALUES('Rio mogi','limpeza',1,NULL)
+INSERT INTO noticia VALUES('Denuncia','descaso com os animais',2,'10/12/2020')
+INSERT INTO noticia VALUES('doação','roupas',3,'10/12/2020')
+
+--DELETANDO DADOS NA TABELA noticia
+DELETE FROM noticia WHERE id = 7
+SELECT *FROM noticia
+SELECT *FROM usuario
+
+--ATUALIZADO DADOS N TABELA noticia
+UPDATE noticia SET Titulo = 'atualizado com sucesso'
+WHERE id = 5
+SELECT *FROM noticia
+------------------------------DADOS NA TABELA comentario-----------------------------------------------------------------
+INSERT INTO comentario VALUES('muito bom, gostei muito',1,3,1)
+INSERT INTO comentario VALUES('muito bom, gostei ',2,3,1)
+INSERT INTO comentario VALUES('bom, gostei muito',3,4,1)
+INSERT INTO comentario VALUES('gostei muito',4,4,1)
+INSERT INTO comentario VALUES('top',5,5,1)
+INSERT INTO comentario VALUES('muito bom',6,6,1)
+INSERT INTO comentario VALUES('bom, gostei',7,7,2)
+INSERT INTO comentario VALUES('muito bom, gostei muito',8,8,2)
+INSERT INTO comentario VALUES('muito bom, gostei muito',9,9,2)
+INSERT INTO comentario VALUES('muito bom',10,10,3)
+INSERT INTO comentario VALUES('muito bom, gostei muito',1,3,4)
+INSERT INTO comentario VALUES('muito bom, gostei ',2,3,4)
+INSERT INTO comentario VALUES('bom, gostei muito',3,4,5)
+INSERT INTO comentario VALUES('gostei muito',4,4,5)
+INSERT INTO comentario VALUES('top',5,5,5)
+INSERT INTO comentario VALUES('muito bom',6,6,6)
+INSERT INTO comentario VALUES('bom, gostei',7,7,2)
+INSERT INTO comentario VALUES('muito bom, gostei muito',8,8,7)
+INSERT INTO comentario VALUES('muito bom, gostei muito',9,9,8)
+INSERT INTO comentario VALUES('muito bom',10,10,8)
+INSERT INTO comentario VALUES('muito bom, gostei muito',1,3,9)
+INSERT INTO comentario VALUES('muito bom, gostei ',2,3,10)
+INSERT INTO comentario VALUES('bom, gostei muito',3,4,11)
+INSERT INTO comentario VALUES('gostei muito',4,4,12)
+INSERT INTO comentario VALUES('top',5,5,12)
+INSERT INTO comentario VALUES('muito bom',6,6,12)
+INSERT INTO comentario VALUES('bom, gostei',7,7,13)
+INSERT INTO comentario VALUES('muito bom, gostei muito',8,8,13)
+INSERT INTO comentario VALUES('muito bom, gostei muito',9,9,13)
+INSERT INTO comentario VALUES('muito bom',10,10,13)
+
+--DELETANDO DADOS NA TABELA comentario
+DELETE FROM comentario WHERE id = 3
+SELECT *FROM comentario
+SELECT *FROM usuario
+SELECT *FROM evento
+SELECT *FROM noticia
+
+
+--ATUALIZADO DADOS N TABELA comentario
+UPDATE comentario SET Texto = 'atualizado com sucesso'
+WHERE id = 5
+SELECT *FROM comentario
+
+
+
+
+
+------------------------------DADOS NA TABELA sub_comentario_noticia-----------------------------------------------------------------
+INSERT INTO sub_comentario_noticia VALUES('muito bom, gostei muito',1,3,11)
+INSERT INTO sub_comentario_noticia VALUES('muito bom, gostei ',2,3,11)
+INSERT INTO sub_comentario_noticia VALUES('bom, gostei muito',3,4,12)
+INSERT INTO sub_comentario_noticia VALUES('gostei muito',4,4,12)
+INSERT INTO sub_comentario_noticia VALUES('top',5,5,12)
+INSERT INTO sub_comentario_noticia VALUES('muito bom',6,6,11)
+INSERT INTO sub_comentario_noticia VALUES('bom, gostei',7,7,13)
+INSERT INTO sub_comentario_noticia VALUES('muito bom, gostei muito',8,8,13)
+INSERT INTO sub_comentario_noticia VALUES('muito bom, gostei muito',9,9,13)
+INSERT INTO sub_comentario_noticia VALUES('muito bom',10,10,13)
+INSERT INTO sub_comentario_noticia VALUES('muito bom, gostei muito',1,3,14)
+INSERT INTO sub_comentario_noticia VALUES('muito bom, gostei ',2,3,14)
+INSERT INTO sub_comentario_noticia VALUES('bom, gostei muito',3,4,15)
+INSERT INTO sub_comentario_noticia VALUES('gostei muito',4,4,15)
+INSERT INTO sub_comentario_noticia VALUES('top',5,5,15)
+INSERT INTO sub_comentario_noticia VALUES('muito bom',6,6,16)
+INSERT INTO sub_comentario_noticia VALUES('bom, gostei',7,7,21)
+INSERT INTO sub_comentario_noticia VALUES('muito bom, gostei muito',8,8,17)
+INSERT INTO sub_comentario_noticia VALUES('muito bom, gostei muito',9,9,18)
+INSERT INTO sub_comentario_noticia VALUES('muito bom',10,10,18)
+INSERT INTO sub_comentario_noticia VALUES('muito bom, gostei muito',1,3,19)
+INSERT INTO sub_comentario_noticia VALUES('muito bom, gostei ',2,3,10)
+INSERT INTO sub_comentario_noticia VALUES('bom, gostei muito',3,4,11)
+INSERT INTO sub_comentario_noticia VALUES('gostei muito',4,4,12)
+INSERT INTO sub_comentario_noticia VALUES('top',5,5,12)
+INSERT INTO sub_comentario_noticia VALUES('muito bom',6,6,12)
+INSERT INTO sub_comentario_noticia VALUES('bom, gostei',7,7,13)
+INSERT INTO sub_comentario_noticia VALUES('muito bom, gostei muito',8,8,13)
+INSERT INTO sub_comentario_noticia VALUES('muito bom, gostei muito',9,9,13)
+INSERT INTO sub_comentario_noticia VALUES('muito bom',10,10,13)
+
+
+--DELETANDO DADOS NA TABELA sub_comentario_evento
+DELETE FROM sub_comentario_noticia WHERE id = 4
+SELECT *FROM sub_comentario_noticia
+SELECT *FROM comentario
+
+--ATUALIZADO DADOS N TABELA sub_comentario_evento
+UPDATE sub_comentario_noticia SET Texto = 'atualizado com sucesso'
+WHERE id = 6
+SELECT *FROM sub_comentario_noticia
+
+
+
+
+
+
+
+------------------------------DADOS NA TABELA organizador-----------------------------------------------------------------
+INSERT INTO organizador VALUES(1,3)
+INSERT INTO organizador VALUES(11,4)
+INSERT INTO organizador VALUES(2,5)
+INSERT INTO organizador VALUES(3,6)
+INSERT INTO organizador VALUES(4,7)
+INSERT INTO organizador VALUES(5,8)
+INSERT INTO organizador VALUES(6,9)
+INSERT INTO organizador VALUES(7,17)
+INSERT INTO organizador VALUES(8,10)
+INSERT INTO organizador VALUES(9,11)
+INSERT INTO organizador VALUES(10,12)
+INSERT INTO organizador VALUES(11,3)
+INSERT INTO organizador VALUES(12,4)
+INSERT INTO organizador VALUES(13,5)
+INSERT INTO organizador VALUES(3,6)
+INSERT INTO organizador VALUES(14,7)
+INSERT INTO organizador VALUES(15,8)
+INSERT INTO organizador VALUES(16,9)
+INSERT INTO organizador VALUES(17,17)
+INSERT INTO organizador VALUES(18,10)
+INSERT INTO organizador VALUES(19,11)
+INSERT INTO organizador VALUES(20,12)
+
+
+--DELETANDO DADOS NA TABELA voluntario
+DELETE FROM organizador WHERE id = 3
+SELECT *FROM organizador
+SELECT *FROM usuario
+SELECT *FROM evento
+
+
+
+
+
+
+
+
+------------------------------DADOS NA TABELA imagens_do_evento_sugerido-----------------------------------------------------------------
+INSERT INTO imagens_do_evento_sugerido VALUES(1,'Rio mogi')
+INSERT INTO imagens_do_evento_sugerido VALUES(2,'Denuncia')
+INSERT INTO imagens_do_evento_sugerido VALUES(3,'doação')
+INSERT INTO imagens_do_evento_sugerido VALUES(4,'Rio mogi')
+INSERT INTO imagens_do_evento_sugerido VALUES(5,'Denuncia')
+INSERT INTO imagens_do_evento_sugerido VALUES(6,'doação')
+INSERT INTO imagens_do_evento_sugerido VALUES(7,'Rio mogi')
+INSERT INTO imagens_do_evento_sugerido VALUES(8,'Denuncia')
+INSERT INTO imagens_do_evento_sugerido VALUES(9,'doação')
+INSERT INTO imagens_do_evento_sugerido VALUES(10,'doação')
+INSERT INTO imagens_do_evento_sugerido VALUES(11,'Rio mogi')
+INSERT INTO imagens_do_evento_sugerido VALUES(12,'Denuncia')
+INSERT INTO imagens_do_evento_sugerido VALUES(13,'doação')
+
+--DELETANDO DADOS NA TABELA imagens_do_evento_sugerido
+DELETE FROM imagens_do_evento_sugerido WHERE id = 3
+SELECT *FROM imagens_do_evento_sugerido
+SELECT *FROM sugestao_evento
+
+--ATUALIZADO DADOS N TABELA imagens_do_evento_sugerido
+UPDATE imagens_do_evento_sugerido SET url_imagem = 'atualizado com sucesso'
+WHERE id = 1
+SELECT *FROM imagens_do_evento_sugerido
+
+
+
+
+
+
+
+------------------------------DADOS NA TABELA imagens_noticia-----------------------------------------------------------------
+INSERT INTO imagens_noticia VALUES('http://localhost:8080/api/usuarios/auth,10,10)--feedback', 1)
+INSERT INTO imagens_noticia VALUES('http://localhost:8080/api/usuarios/auth,10,10)--feedback', 2)
+INSERT INTO imagens_noticia VALUES('http://localhost:8080/api/usuarios/auth,10,10)--feedback', 3)
+INSERT INTO imagens_noticia VALUES('http://localhost:8080/api/usuarios/auth,10,10)--feedback', 4)
+INSERT INTO imagens_noticia VALUES('http://localhost:8080/api/usuarios/auth,10,10)--feedback', 5)
+INSERT INTO imagens_noticia VALUES('http://localhost:8080/api/usuarios/auth,10,10)--feedback', 6)
+INSERT INTO imagens_noticia VALUES('http://localhost:8080/api/usuarios/auth,10,10)--feedback', 7)
+INSERT INTO imagens_noticia VALUES('http://localhost:8080/api/usuarios/auth,10,10)--feedback', 8)
+INSERT INTO imagens_noticia VALUES('http://localhost:8080/api/usuarios/auth,10,10)--feedback', 9)
+INSERT INTO imagens_noticia VALUES('http://localhost:8080/api/usuarios/auth,10,10)--feedback', 10)
+INSERT INTO imagens_noticia VALUES('http://localhost:8080/api/usuarios/auth,10,10)--feedback', 11)
+INSERT INTO imagens_noticia VALUES('http://localhost:8080/api/usuarios/auth,10,10)--feedback', 12)
+INSERT INTO imagens_noticia VALUES('http://localhost:8080/api/usuarios/auth,10,10)--feedback', 13)
+
+--DELETANDO DADOS NA TABELA imagens_noticia
+DELETE FROM imagens_noticia WHERE id = 1
+SELECT *FROM imagens_noticia
+SELECT *FROM noticia
+
+--ATUALIZADO DADOS N TABELA imagens_noticia
+UPDATE imagens_noticia SET url_imagem = 'atualizado com sucesso'
+WHERE id = 1
+SELECT *FROM imagens_noticia
+
+
+
+
+
+
+
+------------------------------DADOS NA TABELA requisito-----------------------------------------------------------------
+INSERT INTO requisito VALUES('Rafael','Martelo','NAO_ATINGIDO',1,5, 3)
+INSERT INTO requisito VALUES('marcelo','pá','NAO_ATINGIDO',2,5, 3)
+INSERT INTO requisito VALUES('davi','pá','NAO_ATINGIDO',1,4, 3)
+INSERT INTO requisito VALUES('claudio','Enxada','NAO_ATINGIDO',1,3, 4)
+INSERT INTO requisito VALUES('pedro','Enxada','NAO_ATINGIDO',1, 4,4)
+INSERT INTO requisito VALUES('daniel','Martelo','NAO_ATINGIDO',1, 3,4)
+INSERT INTO requisito VALUES('paulo','Enxada','NAO_ATINGIDO',1, 5,4)
+INSERT INTO requisito VALUES('manuela','Martelo','NAO_ATINGIDO',1, 4,4)
+INSERT INTO requisito VALUES('gabriela','Enxada','NAO_ATINGIDO',1, 3,5)
+INSERT INTO requisito VALUES('daniela','pá','NAO_ATINGIDO',1, 2,5)
+INSERT INTO requisito VALUES('maria','Martelo','NAO_ATINGIDO',1,2, 3)
+INSERT INTO requisito VALUES('carlos','pá','NAO_ATINGIDO',1,1, 3)
+
+--DELETANDO DADOS NA TABELA imagens_noticia
+DELETE FROM requisito WHERE id = 1
+SELECT *FROM requisito
+SELECT *FROM evento
+
+--ATUALIZADO DADOS N TABELA imagens_noticia
+UPDATE requisito SET nome = 'atualizado com sucesso'
+WHERE id = 1
+SELECT *FROM requisito
+
+
+
+
+
+SELECT *FROM comentario
+SELECT *FROM endereco
+SELECT *FROM evento
+SELECT *FROM feedback
+SELECT *FROM imagens_do_evento_sugerido
+SELECT *FROM imagens_noticia
+SELECT *FROM noticia
+SELECT *FROM organizador
+SELECT *FROM permissao
+SELECT *FROM sub_comentario_evento
+SELECT *FROM sub_comentario_noticia
+SELECT *FROM sugestao_evento
+SELECT *FROM usuario
+SELECT *FROM voluntario
+SELECT *FROM requisito
+
+

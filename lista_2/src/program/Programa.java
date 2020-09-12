@@ -19,7 +19,7 @@ public class Programa {
 		list.add(new Lista(nome, idade));
 		
 		for (Lista l : list) {
-			System.out.println(l);
+			System.out.println(l.toString());
 		}
 				
 		
